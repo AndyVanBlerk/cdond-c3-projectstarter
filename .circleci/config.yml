@@ -5,24 +5,6 @@ defaults: &defaults   ## anchor & aliases
       - image: circleci/node:13.8.0
 
 jobs:
-  lint-frontend: 
-    CODE: 123
-  <<: *defaults  
-  steps:  
-    - checkout
-    - restore_cache:
-        keys: [frontend-build]
-    - run: 
-        name: lint frontend
-        command: |
-          cd frontend
-          echo $CODE
-          npm install
-          npm run build
-    - save_cache:
-        paths: [frontned/node_modules]
-        key: frontend-build
-
   build-frontend:
     <<: *defaults  
     steps:
