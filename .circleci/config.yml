@@ -1,5 +1,25 @@
 version: 2.1
 
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      workflow_id: 
+        type: string
+      event:
+        type: string
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            # Your code here
+            echo " Destroying Environment: << parameters.workflow_id >>"
+            aws s3 rm s3://udapeople << parameters.workflow_id >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-backend << parameterers
+            aws cloudformation delete-stack --stack-name udapeople-frontend << parameterers
+            exit 1
+
 defaults: &defaults   ## anchor & aliases
     docker:
       - image: circleci/node:13.8.0
@@ -137,7 +157,7 @@ jobs:
           event: on_fail
 
 workflows:
-  default:
+  CICDPipeline:
     jobs:
       - build-frontend
       - build-backend
