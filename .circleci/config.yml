@@ -68,6 +68,33 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+          
+  scan-frontend:
+    <<: *defaults  
+    steps: 
+      - checkout                   # Checkout code from git
+      - restore_cache:             # Restore from cache
+          keys: [frontend-build]
+      - run:                       # Your job code here
+          name: Scan frontend Dependencies
+          command:
+            cd frontend
+            npm install
+            npm audit --aidit-level=critical || true
+
+  scan-backend:
+    <<: *defaults  
+    steps: 
+      - checkout                   # Checkout code from git
+      - restore_cache:             # Restore from cache
+          keys: [backend-build]
+      - run:                       # Your job code here
+          name: Scan Backend Dependencies
+          command:
+            cd backend
+            npm install
+            npm audit --aidit-level=critical || true
+
 
 workflows:
   default:
@@ -78,3 +105,5 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
+
+
