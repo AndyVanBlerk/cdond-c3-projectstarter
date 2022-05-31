@@ -98,10 +98,10 @@ jobs:
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
-    branches:                     # shows where this job can only be run on (certain branches)
-      only:
-        - master
-        - /rc-.*/     # any branch that starts with rc.... 
+      branches:                     # shows where this job can only be run on (certain branches)
+        only:
+          - master
+          - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script
