@@ -124,7 +124,7 @@ jobs:
 #        - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
-      - run: yum -y install tar gzip   # run as shell script
+#      - run: yum -y install tar gzip   # run as shell script
       - run: exit 1
  #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
       - destroy-environment:
