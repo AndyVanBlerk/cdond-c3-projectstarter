@@ -35,3 +35,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
+          
+Outputs:    ##@@ added
+  Ec2IP:
+    Description: Public IPv4 DNS name Ec2 Instance
+    Value: !GetAtt ServerInstance.PublicIp
+    Export:
+      Name: !Sub ${ID}-StandaloneSvrIP

@@ -1,7 +1,24 @@
 version: 2.1
 
-
-
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      workflow_id: 
+        type: string
+      event:
+        type: string
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            echo " Destroying Environment: " << parameters.workflow_id >>
+            aws s3 rb --force s3://udapeople << parameters.workflow_id >> 
+            aws cloudformation delete-stack --stack-name udapeople-backend << parameters.workflow_id >>
+            aws cloudformation delete-stack --stack-name udapeople-frontend << parameters.workflow_id >>
+#aws s3 rm --force s3://udapeople << parameters.workflow_id >> --recursive  ## didn't delete!
+#  ('<<' must be escaped as '\\<<' in config v2.1+)
 defaults: &defaults   ## anchor & aliases
     docker:
       - image: circleci/node:13.8.0
@@ -36,21 +53,29 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instance \
-              --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            aws ec2 describe-instances \
+              --filters "Name=instance-type,Values=t2.micro"
+              --query "Reservations[*].Instances[*].[InstanceId]" 
               --output text >> .circleci/ansible/inventory.txt
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-
+   destroy-infrastructure:
+    docker:
+      - image: amazon/aws-cli     # Docker image here that supports AWS CLI            
+      -destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
+## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+## --query 'Reservations[*].Instances[*].PublicIpAddress' \
 workflows:
   default:
     jobs:
-      - deploy-infrastructure:
+      - destroy-infrastructure
+     # - deploy-infrastructure:
        #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [test-feature-branch]
+      #    filters:
+       #     branches:
+        #      only: [test-feature-branch]
 
