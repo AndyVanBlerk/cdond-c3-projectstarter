@@ -24,7 +24,7 @@ defaults: &defaults   ## anchor & aliases
       - image: circleci/node:13.8.0
 
 jobs:
-   deploy-infrastructure:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
 #    branches:                     # shows where this job can only be run on (certain branches)
@@ -61,10 +61,11 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-   destroy-infrastructure:
+  destroy-infrastructure:
     docker:
-      - image: amazon/aws-cli     # Docker image here that supports AWS CLI            
-      -destroy-environment:
+      - image: amazon/aws-cli     # Docker image here that supports AWS CLI  
+    steps:            
+      - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
 ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
