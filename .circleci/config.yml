@@ -17,7 +17,7 @@ commands:
             aws s3 rb --force s3://udapeople << parameters.workflow_id >> 
             aws cloudformation delete-stack --stack-name udapeople-backend << parameters.workflow_id >>
             aws cloudformation delete-stack --stack-name udapeople-frontend << parameters.workflow_id >>
-#aws s3 rm --force s3://udapeople << parameters.workflow_id >> --recursive  ## didn't delete!
+# aws s3 rm --force s3://udapeople << parameters.workflow_id >> --recursive  ## didn't delete!
 #  ('<<' must be escaped as '\\<<' in config v2.1+)
 defaults: &defaults   ## anchor & aliases
     docker:
@@ -61,21 +61,18 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-  destroy-infrastructure:
-    docker:
-      - image: amazon/aws-cli     # Docker image here that supports AWS CLI  
-    destroy-environment:
-        workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-        event: on_fail
+ #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
 ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 ## --query 'Reservations[*].Instances[*].PublicIpAddress' \
 workflows:
   default:
     jobs:
-      - destroy-infrastructure
-     # - deploy-infrastructure:
-       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #    filters:
-       #     branches:
-        #      only: [test-feature-branch]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [test-feature-branch]
 
