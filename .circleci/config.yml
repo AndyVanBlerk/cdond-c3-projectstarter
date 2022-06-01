@@ -64,9 +64,9 @@ jobs:
   destroy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI  
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
+    destroy-environment:
+        workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+        event: on_fail
 ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 ## --query 'Reservations[*].Instances[*].PublicIpAddress' \
 workflows:
