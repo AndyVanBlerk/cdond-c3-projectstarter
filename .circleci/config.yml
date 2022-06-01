@@ -7,97 +7,7 @@ defaults: &defaults   ## anchor & aliases
       - image: circleci/node:13.8.0
 
 jobs:
-  build-frontend:
-    <<: *defaults  
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [frontend-build]
-      - run:
-          name: Build front-end
-          command: |
-            cd frontend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
-
-  build-backend:
-    <<: *defaults  
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: Back-end build
-          command: |
-            cd backend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-
-  test-frontend:
-    <<: *defaults  
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [frontend-build]
-      - run: 
-          name: Run Frontend Test
-          command: |
-            cd frontend
-            npm install
-            npm run test
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
-
-  test-backend:
-    <<: *defaults  
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run: 
-          name: Run Backend Test
-          command: |
-            cd backend
-            npm install
-            npm run test
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-
-  scan-frontend:
-    <<: *defaults  
-    steps: 
-      - checkout                   # Checkout code from git
-      - restore_cache:             # Restore from cache
-          keys: [frontend-build]
-      - run:                       # Your job code here
-          name: Scan frontend Dependencies
-          command:
-            cd frontend
-            npm install
-            npm audit --aidit-level=critical || true
-
-  scan-backend:
-    <<: *defaults  
-    steps: 
-      - checkout                   # Checkout code from git
-      - restore_cache:             # Restore from cache
-          keys: [backend-build]
-      - run:                       # Your job code here
-          name: Scan Backend Dependencies
-          command:
-            cd backend
-            npm install
-            npm audit --aidit-level=critical || true
-
-  deploy-infrastructure:
+   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
 #    branches:                     # shows where this job can only be run on (certain branches)
@@ -138,18 +48,8 @@ jobs:
 workflows:
   CICDPipeline:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [test-frontend]
-      - scan-backend:
-          requires: [test-backend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+       #   requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [test-feature-branch]
