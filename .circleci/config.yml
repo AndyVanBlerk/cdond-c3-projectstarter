@@ -155,10 +155,11 @@ jobs:
           ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
           ## --query 'Reservations[*].Instances[*].PublicIpAddress' \
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
-          root: .circleci/ansible/ # ~/
+          root: ~/
           paths:
-            - .circleci/ansible/inventory.txt
- #           - project/.circleci/ansible/inventory.txt
+ #           - .circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory.txt
+ #The specified paths did not match any files in /root/project/.circleci/ansible
       - destroy-environment:
           workflow_id:  "${CIRCLE_WORKFLOW_ID:0:7}"  # "da4df27"
           event: on_fail
