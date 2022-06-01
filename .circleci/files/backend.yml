@@ -36,9 +36,9 @@ Resources:
         - Key: Name
           Value: !Sub backend-${ID}
 
-#Outputs:    ##@@ added
-#  Ec2IP:
-#    Description: Public IPv4 DNS name Ec2 Instance
-#    Value: !GetAtt ServerInstance.PublicIp
-#    Export:
-#      Name: !Sub ${ID}-StandaloneSvrIP
+Outputs:    ##@@ added
+  Ec2BackendIP:
+    Description: Public IPv4 DNS name Ec2 Instance
+    Value: !GetAtt EC2Instance.PublicIp
+    Export:
+      Name: !Sub ${ID}-Ec2BackendIP
