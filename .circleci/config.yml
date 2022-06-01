@@ -64,7 +64,6 @@ jobs:
   destroy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI  
-    steps:            
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail

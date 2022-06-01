@@ -14,11 +14,13 @@ commands:
           when: on_fail
           command: |
             # Your code here
-            echo " Destroying Environment: << parameters.workflow_id >>"
+            # echo " Destroying Environment:  << parameters.workflow_id >> " 
+            echo " Destroying Environment: " << parameters.workflow_id >>
+            #  ('<<' must be escaped as '\\<<' in config v2.1+)
             aws s3 rm s3://udapeople << parameters.workflow_id >> --recursive
             aws cloudformation delete-stack --stack-name udapeople-backend << parameterers
             aws cloudformation delete-stack --stack-name udapeople-frontend << parameterers
-            exit 1
+            # exit 1
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -38,12 +40,15 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
-            
+
+defaults: &defaults   ## anchor & aliases
+    docker:
+      - image: circleci/node:13.8.0
+
 jobs:
   lint-frontend: 
     CODE: 123
-  docker:
-    - image: circleci/node:13.8.0   # This is an orb (reusable snippets of code)
+  <<: *defaults  
   steps:  
     - checkout
     - restore_cache:
@@ -60,8 +65,7 @@ jobs:
         key: frontend-build
 
   build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -78,8 +82,7 @@ jobs:
           key: frontend-build
 
   build-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -96,32 +99,28 @@ jobs:
           key: backend-build
 
   test-frontend:
-    docker:
-      # Docker image here
+    <<: *defaults  
     steps:
       # Checkout code from git
       # Restore from cache
       # Your job code here
                 
   test-backend:
-    docker:
-      # Docker image here
+    <<: *defaults  
     steps:
       # Checkout code from git
       # Restore from cache
       # Your job code here
             
   scan-frontend:
-    docker:
-      # Docker image here
+    <<: *defaults  
     steps:
       # Checkout code from git
       # Restore from cache
       # Your job code here
 
   scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps: 
       - checkout                   # Checkout code from git
       - restore_cache:             # Restore from cache
@@ -145,17 +144,14 @@ jobs:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script
       - run: 
-          name: Ensure back-end infrastructure exists
+          name: Ensure back-end infrastructure is in place already
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-              #--tags project=your-tag \
-              # --stack-name "your back-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"  
-              # exit 1
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -181,7 +177,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      -destroy-environment:
+      - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
     
