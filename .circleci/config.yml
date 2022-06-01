@@ -14,8 +14,10 @@ commands:
           when: on_fail
           command: |
             echo " Destroying Environment: "-<< parameters.workflow_id>>
+            echo " aws s3 rm s3://udapeople- << parameters.workflow_id >> --recursive "
             aws s3 rm s3://udapeople- << parameters.workflow_id >> --recursive
             aws cloudformation delete-stack --stack-name udapeople-backend << parameters.workflow_id >>
+            echo " aws cloudformation delete-stack --stack-name udapeople-backend << parameters.workflow_id >> "
             aws cloudformation delete-stack --stack-name udapeople-frontend << parameters.workflow_id >>
 # aws s3 rm s3://udapeople << parameters.workflow_id >> --recursive  ## didn't delete!
 #  aws s3 rb --force s3://udapeople << parameters.workflow_id >> 
@@ -125,7 +127,7 @@ jobs:
     steps:
       - checkout      # Checkout code from git
 #      - run: yum -y install tar gzip   # run as shell script
-      - run: exit 1
+      - run: exit 1  # kicks off the destroy-environment
  #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
