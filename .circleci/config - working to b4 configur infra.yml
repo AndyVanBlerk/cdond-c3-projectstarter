@@ -126,19 +126,48 @@ jobs:
 #        - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
-#      - run: yum -y install tar gzip   # run as shell script
-      - run: exit 1  # kicks off the destroy-environment
- #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
+      - run: yum -y install tar gzip   # run as shell script
+#      - run: exit 1  # kicks off the destroy-environment
+      - run: 
+          name: Ensure back-end infrastructure is in place already
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            aws ec2 describe-instances \
+              --filters "Name=instance-type,Values=t2.micro" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text >> .circleci/ansible/inventory.txt
+          #    --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+          ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+          ## --query 'Reservations[*].Instances[*].PublicIpAddress' \
+      - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+ #The specified paths did not match any files in /root/project/.circleci/ansible
       - destroy-environment:
-          workflow_id:  "881f08e" # "${CIRCLE_WORKFLOW_ID:0:7}"
+          workflow_id:  "${CIRCLE_WORKFLOW_ID:0:7}"  # "da4df27"
           event: on_fail
-## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-## --query 'Reservations[*].Instances[*].PublicIpAddress' \
+
 workflows:
   CICDPipeline-1:
     jobs:
       - deploy-infrastructure
-##          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
 #          filters:
 #            branches:
 #              only: [test-feature-branch]
