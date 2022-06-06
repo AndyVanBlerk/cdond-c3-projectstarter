@@ -13,14 +13,15 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            echo " Destroying Environment: "-<<parameters.workflow_id>>
-            echo " aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive "
-            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
-            echo " aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>> "
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
-# aws s3 rm s3://udapeople << parameters.workflow_id >> --recursive  ## didn't delete!
-#  aws s3 rb --force s3://udapeople << parameters.workflow_id >> 
+            # Your code here
+            # echo " Destroying Environment:  << parameters.workflow_id >> " 
+            echo " Destroying Environment: " << parameters.workflow_id >>
+            #  ('<<' must be escaped as '\\<<' in config v2.1+)
+            aws s3 rm s3://udapeople << parameters.workflow_id >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-backend << parameterers
+            aws cloudformation delete-stack --stack-name udapeople-frontend << parameterers
+            # exit 1
+
 
 defaults: &defaults   ## anchor & aliases
     docker:
@@ -126,20 +127,54 @@ jobs:
 #        - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
-#      - run: yum -y install tar gzip   # run as shell script
-      - run: exit 1  # kicks off the destroy-environment
- #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
+      - run: yum -y install tar gzip   # run as shell script
+      - run: 
+          name: Ensure back-end infrastructure is in place already
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            aws ec2 describe-instance \
+              --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text >> .circleci/ansible/inventory.txt
+      - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment:
-          workflow_id:  "881f08e" # "${CIRCLE_WORKFLOW_ID:0:7}"
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
-## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-## --query 'Reservations[*].Instances[*].PublicIpAddress' \
+
 workflows:
-  CICDPipeline-1:
+  CICDPipeline:
     jobs:
-      - deploy-infrastructure
-##          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-#          filters:
-#            branches:
-#              only: [test-feature-branch]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [test-frontend]
+      - scan-backend:
+          requires: [test-backend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [test-feature-branch]
 
