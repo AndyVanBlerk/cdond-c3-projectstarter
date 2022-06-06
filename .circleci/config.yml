@@ -149,8 +149,8 @@ jobs:
             aws ec2 describe-instances \
               --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress[]' \
-              --output text >> .circleci/ansible/inventory.txt
-              --output text >> inventory1.txt
+              --output text >> .circleci/ansible/inventory.txt \
+              --output text >> inventory1.txt         
        #      --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
