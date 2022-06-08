@@ -150,10 +150,11 @@ jobs:
             ls
             cat .circleci/ansible/inventory.txt  
             echo "test echo output to txt file" > .circleci/ansible/inventory.txt 
-            Aws s3 ls --output text >>  .circleci/ansible/inventory.txt 
             pwd >> .circleci/ansible/inventory.txt 
             echo  "Testing Tee! " | tee -a .circleci/ansible/inventory.txt
+            aws s3 ls --output text >>  .circleci/ansible/inventory.txt 
             cat .circleci/ansible/inventory.txt 
+            aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query 'Reservations[*].Instances[*].PublicIpAddress[]' --output text >> .circleci/ansible/inventory2.txt
 
 
       - run:
