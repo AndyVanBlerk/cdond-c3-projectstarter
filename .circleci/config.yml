@@ -146,15 +146,15 @@ jobs:
       - run:
           name: Check the paths 
           command: |
-            echo pwd
             pwd
-            cat .circleci/ansible/inventory.txt
-            cat project/.circleci/ansible/inventory.txt
-            cd  .circleci/ansible
-            pwd
-            echo pwd 
-            cat .circleci/ansible/inventory.txt
-            cat project/.circleci/ansible/inventory.txt
+            ls
+            cat .circleci/ansible/inventory.txt  
+            echo "Root of path using one cuppy " > RootPath1.txt 
+            echo "Root of path using 2 cuppy - does this create a file" >> RootPath2.txt 
+            echo " operator append the output to the end of the RootPath1" >>RootPath1.txt
+            echo " --output text >> .circleci/ansible/inventory.txt" >>RootPath1.txt
+            echo " append to inventory.txt " >> .circleci/ansible/inventory.txt 
+
 
       - run:
           name: Add back-end ip to ansible inventory
@@ -162,7 +162,7 @@ jobs:
             aws ec2 describe-instances \
               --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress[]' \
-              --output text >> project/.circleci/ansible/inventory.txt \  
+              --output text >> .circleci/ansible/inventory.txt  
        #      --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
