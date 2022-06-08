@@ -130,7 +130,7 @@ jobs:
       - run: exit 1  # kicks off the destroy-environment
  #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
       - destroy-environment:
-          workflow_id:  "c3bbae7" # "${CIRCLE_WORKFLOW_ID:0:7}"
+          workflow_id:  "227e91f" # "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
 ## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 ## --query 'Reservations[*].Instances[*].PublicIpAddress' \
