@@ -144,43 +144,13 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - run:
-          name: Check the paths !!!
-          command: |
-            pwd
-            ls
-            cat .circleci/ansible/inventory.txt  
-            echo "test echo output to txt file" >> .circleci/ansible/inventory.txt 
-            pwd >> .circleci/ansible/inventory.txt 
-            echo  "Testing Tee! " | tee -a .circleci/ansible/inventory.txt
-            pwd
-            aws s3 ls --output text >>  .circleci/ansible/inventory.txt 
-            pwd
-            aws s3 ls >>.circleci/ansible/inventory.txt
-            pwd
-            aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query 'Reservations[*].Instances[*].PublicIpAddress[]' --output text >> .circleci/ansible/inventory.txt
-            pwd
-            aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query 'Reservations[*].Instances[*].PublicIpAddress[]' --output text 
-            echo " now going to cat the inventory"
-            pwd
-            cat .circleci/ansible/inventory.txt 
-            pwd
-            echo "project/.circle attempt" >> project/.circleci/ansible/inventory.txt
-            pwd
-            cd .circleci/ansible/
-            pwd
-            echo "cd'd into directory" >> inventory.txt
-            pwd
-            echo "cd'd into directory with slash" >> /inventory.txt
-      
-
-
-      - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances \
+            BackIP=$(aws ec2 describe-instances \
               --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress[]' \
-              --output text >> .circleci/ansible/inventory.txt  
+              --output text)
+              echo $BackIP >> .circleci/ansible/inventory.txt  
        #      --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
 
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
