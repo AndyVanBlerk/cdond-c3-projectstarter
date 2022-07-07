@@ -143,9 +143,8 @@ jobs:
               --tags project=udapeople
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              S3Name=$(aws s3 ls | grep udapeople)
-              echo "S3Name=$S3Name"
-              curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d '$S3Name'
+              echo aws s3 ls 
+
                
       - run:             
           name: Add back-end ip to ansible inventory
@@ -158,7 +157,11 @@ jobs:
             pwd
             echo "$BACKEND_PUBLIC_IP"
             cat ./.circleci/ansible/inventory.txt
-            curl https://kvdb.io/BMUk3Gs9UKHjMf4M37iWhi/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '$BACKEND_PUBLIC_IP'
+            curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d '$BACKEND_PUBLIC_IP'
+
+
+
+#            curl https://kvdb.io/BMUk3Gs9UKHjMf4M37iWhi/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '$BACKEND_PUBLIC_IP'
      
           
 
