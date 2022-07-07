@@ -144,7 +144,11 @@ jobs:
       - persist_to_workspace:
             root: .circleci/ansible
             paths:
-              - inventory.txt   
+              - inventory.txt  
+      - attach_workspace:
+            at: /tmp   
+            cat /tmp/inventory.txt
+
       - run:
           name: Ensure front-end infrastructure exist & capture S3Name
           command: |
