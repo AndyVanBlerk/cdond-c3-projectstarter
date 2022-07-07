@@ -163,6 +163,15 @@ jobs:
             echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
             cat ./.circleci/ansible/inventory.txt
             curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
+            
+      - run:             
+          name: STRING CUTTING
+          command: |
+            N=3
+            STRING="one two three four"
+            arr=($STRING)
+            echo ${arr[N-1]}
+            echo ${arr[N]}
 
       - persist_to_workspace:
             root: .circleci/ansible
