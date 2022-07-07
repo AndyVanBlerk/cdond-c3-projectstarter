@@ -150,9 +150,9 @@ jobs:
             --filters "Name=instance-type,Values=t2.micro" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
-          echo pwd
+          pwd
           echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"  
-          echo $BACKEND_PUBLIC_IP
+          echo "$BACKEND_PUBLIC_IP"
           echo newline2
           echo " with quotes $BACKEND_PUBLIC_IP"
           cat ./.circleci/ansible/inventory.txt
