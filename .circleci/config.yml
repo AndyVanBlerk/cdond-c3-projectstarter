@@ -127,7 +127,7 @@ jobs:
     steps:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script
-      - run: 
+#      - run: yum -y install gzip
           name: Ensure back-end infrastructure is in place already
           command: |
             aws cloudformation deploy \
@@ -146,31 +146,22 @@ jobs:
       - run:             
           name: Add back-end ip to ansible inventory
           command: |
-            pwd
-            ls
-            cat .circleci/ansible/inventory.txt  
-            echo "test echo output to txt file" >> .circleci/ansible/inventory.txt 
-            pwd >> .circleci/ansible/inventory.txt 
-            echo  "Testing Tee! " | tee -a .circleci/ansible/inventory.txt
-            pwd
-            aws s3 ls --output text >>  .circleci/ansible/inventory.txt 
-            pwd
-            aws s3 ls >>.circleci/ansible/inventory.txt
-            pwd
-            aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query 'Reservations[*].Instances[*].PublicIpAddress[]' --output text >> .circleci/ansible/inventory.txt
-            pwd
-            aws ec2 describe-instances --filters "Name=instance-type,Values=t2.micro" --query 'Reservations[*].Instances[*].PublicIpAddress[]' --output text 
-            echo " now going to cat the inventory"
-            pwd
-            cat .circleci/ansible/inventory.txt 
-            pwd
-            echo "project/.circle attempt" >> project/.circleci/ansible/inventory.txt
-            pwd
-            cd .circleci/ansible/
-            pwd
-            echo "cd'd into directory" >> inventory.txt
-            pwd
-            echo "cd'd into directory with slash" >> /inventory.txt
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+            --filters "Name=instance-type,Values=t2.micro" \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text)
+          echo pwd
+          echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"  
+          echo $BACKEND_PUBLIC_IP
+          echo newline2
+          echo " with quotes $BACKEND_PUBLIC_IP"
+          cat ./.circleci/ansible/inventory.txt
+          echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
+          curl https://kvdb.io/BMUk3Gs9UKHjMf4M37iWhi/migration_${CIRCLE_WORKFLOW_ID:0:7} -d  '$BACKEND_PUBLIC_IP'
+          
+
+
+           # curl -H "Content-Type: text/plain" -H "token: 4494694a-4f89-4073-a5a0-00fb827decc6" --request PUT --data "URLS" https://api.memstash.io/values/CIRCLE_WORKFLOW_ID
        #      --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
       - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
           root: ~/
