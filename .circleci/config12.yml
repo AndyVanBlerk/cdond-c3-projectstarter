@@ -143,10 +143,8 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-              S3Name=$(aws s3 ls | grep udapeople)
-              echo "S3Name=$S3Name"
-              curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d 'S3Name'
-              aws s3 ls 
+              echo aws s3 ls 
+
                
       - run:             
           name: Add back-end ip to ansible inventory
@@ -158,19 +156,24 @@ jobs:
             echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
             pwd
             echo "$BACKEND_PUBLIC_IP"
-            echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
             cat ./.circleci/ansible/inventory.txt
-            curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d '${BACKEND_PUBLIC_IP}'
+            curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d '$BACKEND_PUBLIC_IP'
+
+
+
+#            curl https://kvdb.io/BMUk3Gs9UKHjMf4M37iWhi/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '$BACKEND_PUBLIC_IP'
+     
+          
 
       - persist_to_workspace:
             root: .circleci/ansible
             paths:
               - inventory.txt      
 
- #     - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
- #         root: ~/
- #         paths:
- #           - project/.circleci/ansible/inventory.txt
+      - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
