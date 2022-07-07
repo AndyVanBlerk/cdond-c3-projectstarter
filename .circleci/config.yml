@@ -150,13 +150,12 @@ jobs:
             --filters "Name=instance-type,Values=t2.micro" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
+            echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
             pwd
-  #          echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"  
             echo "$BACKEND_PUBLIC_IP"
             echo newline2
             echo " with quotes $BACKEND_PUBLIC_IP"
             cat ./.circleci/ansible/inventory.txt
-            echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
             curl https://kvdb.io/BMUk3Gs9UKHjMf4M37iWhi/migration_${CIRCLE_WORKFLOW_ID:0:7} -d  '$BACKEND_PUBLIC_IP'
           
 
