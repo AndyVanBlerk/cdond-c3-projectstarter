@@ -145,13 +145,6 @@ jobs:
             root: .circleci/ansible
             paths:
               - inventory.txt  
-      - attach_workspace:
-            at: /tmp 
-      - run:             
-          name: CHECK inventory perists
-          command: |  
-            cat /tmp/inventory.txt
-
       - run:
           name: Ensure front-end infrastructure exist & capture S3Name
           command: |
