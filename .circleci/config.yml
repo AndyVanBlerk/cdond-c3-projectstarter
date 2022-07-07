@@ -145,7 +145,7 @@ jobs:
               --tags project=udapeople
               S3Name=$(aws s3 ls | grep udapeople)
               echo "S3Name=$S3Name"
-              curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d $S3Name
+              curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d ${S3Name}
               aws s3 ls 
                
       - run:             
