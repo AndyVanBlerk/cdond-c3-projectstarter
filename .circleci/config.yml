@@ -126,8 +126,7 @@ jobs:
 #        - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
-      - run: yum -y install tar gzip   # run as shell script
-#      - run: yum -y install gzip
+      - run: yum -y install tar gzip   # run as shell script #      - run: yum -y install gzip
           name: Ensure back-end infrastructure is in place already
           command: |
             aws cloudformation deploy \
