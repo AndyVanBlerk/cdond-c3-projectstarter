@@ -1,0 +1,28 @@
+---
+- name: "Update apt packages"
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "Upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: "Remove dependencies that are no longer required"
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: Install NodeJS
+  become: yes
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    apt-get install -y nodejs
+- name: Install PM2
+  become: yes
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present

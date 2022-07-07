@@ -178,7 +178,15 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible    
+            apk add --update ansible 
+            apk upgrade
+            apk add unzip 
+            apk add python3
+            apk add curl
+            /usr/local/bin/python -m pip install --upgrade pip  
+            ansible --version            
+            pip install awscli --upgrade   
+            aws --version  
       - run:
           name: Configure server
           command: |
