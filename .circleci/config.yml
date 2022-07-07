@@ -165,17 +165,13 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
 
-
-
-
-
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: [' cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77'] 
+          fingerprints: ['cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77'] 
       - attach_workspace:
           at: .circleci/ansible
       - run:
@@ -190,9 +186,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
-
-
+          event: on_fail
 
 workflows:
   CICDPipeline:
