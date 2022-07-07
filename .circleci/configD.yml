@@ -1,5 +1,5 @@
 version: 2.1
-
+## Destroy environment only blueprint
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -102,7 +102,7 @@ jobs:
           command:
             cd frontend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit --aidit-level=critical || true
 
   scan-backend:
     <<: *defaults  
@@ -115,9 +115,9 @@ jobs:
           command:
             cd backend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit --aidit-level=critical || true
 
-  deploy-infrastructure:
+  destroy-infrastructure:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
 #    branches:                     # shows where this job can only be run on (certain branches)
@@ -126,65 +126,20 @@ jobs:
 #        - /rc-.*/     # any branch that starts with rc.... 
     steps:
       - checkout      # Checkout code from git
-      - run: yum -y install tar gzip   # run as shell script #      - run: yum -y install gzip
-      - run: 
-          name: Ensure back-end infrastructure is in place already
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-      - run:
-          name: Ensure front-end infrastructure exist & capture S3Name
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-              S3Name=$(aws s3 ls | grep udapeople)
-              echo " s3Name: $S3Name"
-#              $S3NameCut=$S3Name|awk '{print $3}'
-#              echo "S3NameCUT $S3NameCut"
-#              curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d $S3NameCut
-
-               
-      - run:             
-          name: Add back-end ip to ansible inventory
-          command: |
-            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-            --filters "Name=instance-type,Values=t2.micro" \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --output text)
-            echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
-            pwd
-            echo "$BACKEND_PUBLIC_IP"
-            echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
-            cat ./.circleci/ansible/inventory.txt
-            curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
-
-      - persist_to_workspace:
-            root: .circleci/ansible
-            paths:
-              - inventory.txt      
-
- #     - persist_to_workspace:       # Here's where you will add some code to rollback on failure  
- #         root: ~/
- #         paths:
- #           - project/.circleci/ansible/inventory.txt
+#      - run: yum -y install tar gzip   # run as shell script
+      - run: exit 1  # kicks off the destroy-environment
+ #destroy-infrastructure:   ##   |   2. [#/jobs/destroy-infrastructure] required key [steps] not found
       - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          workflow_id:  "8181c31" # "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
-
+## --filters "Name=tag:Name.Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+## --query 'Reservations[*].Instances[*].PublicIpAddress' \
 workflows:
-  CICDPipeline:
+  CICDPipeline-1:
     jobs:
-      - deploy-infrastructure
-#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - destroy-infrastructure
+##          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
 #          filters:
 #            branches:
-#              only: [test-feature-branch]  # this makes it not run the job..... ?#
-#      - configure-infrastructure:
-#          requires: [deploy-infrastructure]
+#              only: [test-feature-branch]
 
