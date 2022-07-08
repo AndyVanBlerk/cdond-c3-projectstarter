@@ -130,7 +130,8 @@ jobs:
           command:
             cd frontend
             npm install
-            npm audit fix --audit-level=critical --force        
+            npm audit --audit-level=critical
+            npm audit --audit-level=critical           
 
   scan-backend:
     <<: *defaults  
@@ -143,8 +144,8 @@ jobs:
           command:
             cd backend
             npm install
-            npm audit fix --audit-level=critical --force  
-#            npm audit --audit-level=critical 
+            npm audit --audit-level=critical 
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
     docker:
@@ -161,7 +162,7 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
               BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
               echo "workflowID:  ${CIRCLE_WORKFLOW_ID:0:7}"
