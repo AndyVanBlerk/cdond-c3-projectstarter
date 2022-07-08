@@ -14,7 +14,9 @@ commands:
           when: on_fail
           command: |
             if ! [ -x "$(command -v aws)" ]; then
-            pip install awscli
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
             else
             echo "AWS CLI already installed"
             fi
@@ -128,7 +130,8 @@ jobs:
           command:
             cd frontend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit --audit-level=critical
+            npm audit --audit-level=critical           
 
   scan-backend:
     <<: *defaults  
@@ -141,7 +144,8 @@ jobs:
           command:
             cd backend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit --audit-level=critical 
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
     docker:
@@ -224,6 +228,7 @@ jobs:
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
+          
   run-migrations:  #3
     docker:
       - image: circleci/node:13.8.0
@@ -255,6 +260,8 @@ jobs:
             touch migrations_dump.txt
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
+            cat backend/.env
+            ls backend
       - run:
           name: Send migration results to kvdb
           command: | 
