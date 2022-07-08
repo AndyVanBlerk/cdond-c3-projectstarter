@@ -184,7 +184,7 @@ jobs:
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
-          
+
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
@@ -255,7 +255,7 @@ jobs:
             curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
             echo "result: $result" 
      # Here's where you will add some code to rollback on failure      
-     - destroy-environment:
+      - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
       - revert-migrations:
@@ -339,29 +339,19 @@ jobs:
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
+          event: on_fail          
       - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"   
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
 
        
 workflows:
   CICDPipeline:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]  
-      - deploy-infrastructure    
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [test-feature-branch]  # this makes it not run the job..... ?#
+      - deploy-infrastructure
+#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+#          filters:
+#            branches:
+#              only: [test-feature-branch]  # this makes it not run the job..... ?#
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
