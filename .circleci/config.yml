@@ -10,6 +10,15 @@ commands:
         type: string
     steps:
       - run:
+          name: Install AWS CLI if not installed
+          when: on_fail
+          command: |
+            if ! [ -x "$(command -v aws)" ]; then
+            pip install awscli
+            else
+            echo "AWS CLI already installed"
+            fi
+      - run:
           name: Destroy environments
           when: on_fail
           command: |
@@ -152,7 +161,7 @@ jobs:
               --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
+              echo "workflowID:  ${CIRCLE_WORKFLOW_ID:0:7}"
               echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
               pwd
               echo "$BACKEND_PUBLIC_IP"
@@ -172,7 +181,7 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
+              echo "workflowID:  ${CIRCLE_WORKFLOW_ID:0:7}"
               S3Name=$(aws s3 ls | grep udapeople)
               echo " s3Name: $S3Name"
               N=3
@@ -229,6 +238,8 @@ jobs:
           command: |
             cd backend
             ls
+            echo $TYPEORM_CONNECTION
+            echo TYPEORM_HOST
             echo ENVIROMENT=$ENVIROMENT > ".env"
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
