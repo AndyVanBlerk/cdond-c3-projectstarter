@@ -135,6 +135,7 @@ jobs:
               --filters "Name=instance-type,Values=t2.micro" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
+              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
               echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
               pwd
               echo "$BACKEND_PUBLIC_IP"
@@ -154,6 +155,7 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
+              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
               S3Name=$(aws s3 ls | grep udapeople)
               echo " s3Name: $S3Name"
               N=3
@@ -179,18 +181,19 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible 
-#            apk upgrade
-#            apk add unzip 
-#            apk add python3
-#            apk add curl
-#            /usr/local/bin/python -m pip install --upgrade pip  
-#            ansible --version            
-#            pip install awscli --upgrade   
-#            aws --version  
+            apk upgrade
+            apk add unzip 
+            apk add python3
+            apk add curl
+            /usr/local/bin/python -m pip install --upgrade pip  
+            ansible --version            
+            pip install awscli --upgrade   
+            aws --version  
       - run:
           name: Configure server
           command: |
             cat /tmp/.circleci/ansible/inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
