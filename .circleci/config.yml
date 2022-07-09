@@ -14,8 +14,10 @@ commands:
           when: on_fail
           command: |
             if ! [ -x "$(command -v aws)" ]; then
-            /usr/local/bin/python -m pip install --upgrade pip  
-            pip install awscli --upgrade  
+            apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            Sudo unzip awscliv2.zip
+            Sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
             else
             echo "AWS CLI already installed"
             fi
@@ -217,7 +219,8 @@ jobs:
             /usr/local/bin/python -m pip install --upgrade pip  
             pip install awscli --upgrade   
             ansible --version  
-            echo aws --version  
+            aws --version
+#           echo aws --version  # returned echo aws --version
       - run:
           name: CONFIGURE INFRA config-server - 2 roles
           command: |
@@ -244,6 +247,11 @@ jobs:
             echo "typeorm_connection: $TYPEORM_CONNECTION "
             echo "TYPEORM_HOST: $TYPEORM_HOST "
             echo ENVIROMENT=$ENVIROMENT > ".env"
+            echo "ENVIRONMENT : $ENVIROMENT "
+            echo  ENVIRONMENT  $ENVIROMENT
+            echo 'ENVIRONMENT : $ENVIROMENT '
+            TEST=test1
+            echo $TEST            
             ls
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
