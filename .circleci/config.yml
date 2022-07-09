@@ -40,7 +40,7 @@ commands:
             fi
             echo "Success: $SUCCESS"
             npm run migrations:revert            
-
+jobs:
   Revert-migrations:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
