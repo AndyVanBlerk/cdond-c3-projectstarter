@@ -36,9 +36,13 @@ jobs:
   Revert-migrations:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
-    steps:
-      - checkout  
-      - run: npm install      
+      - checkout 
+      - run:
+          name: Install dependencies
+          command: |
+            npm install webpack-dev-server -g
+            npm install
+            aws --version  
       - run: exit 1  # kicks off the destroy-environment
       - revert-migrations:
           workflow_id: "5cfa402"  ###@@@@@"${CIRCLE_WORKFLOW_ID:0:7}"
