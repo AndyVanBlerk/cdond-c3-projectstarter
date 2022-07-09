@@ -36,7 +36,7 @@ commands:
 defaults: &defaults   ## anchor & aliases
     docker:
       - image: circleci/node:13.8.0            
-      
+jobs:      
   build-backend:
     <<: *defaults  
     steps:
@@ -52,7 +52,7 @@ defaults: &defaults   ## anchor & aliases
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build      
-jobs:
+
   Revert-migrations:
     <<: *defaults 
     steps:
