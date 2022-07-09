@@ -31,11 +31,14 @@ commands:
           when: on_fail            # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result 
-            npm run migrations:revert            
+            npm run migrations:revert  
+            
+defaults: &defaults   ## anchor & aliases
+    docker:
+      - image: circleci/node:13.8.0            
 jobs:
   Revert-migrations:
-    docker:
-      - image: amazon/aws-cli     # Docker image here that supports AWS CLI
+    <<: *defaults 
     steps:
       - checkout 
       - run:
