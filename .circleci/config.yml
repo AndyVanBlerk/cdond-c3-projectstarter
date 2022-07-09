@@ -153,7 +153,7 @@ jobs:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script #      - run: yum -y install gzip - dont need this runs both in  one line
       - run: 
-          name: DEPLOY INFRA: Ensure BACKEND infrastructure exist and capture Backend IP (4 ansible)
+          name: DEPLOY INFRA  Ensure BACKEND infrastructure exist and capture Backend IP (4 ansible)
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
@@ -177,7 +177,7 @@ jobs:
             - inventory.txt
               
       - run:
-          name: DDEPLOY INFRA: Ensure FRONTEND  infrastructure exist & capture S3Name
+          name: DDEPLOY INFRA Ensure FRONTEND  infrastructure exist & capture S3Name
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
