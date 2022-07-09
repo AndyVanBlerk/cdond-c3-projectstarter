@@ -248,15 +248,7 @@ jobs:
           no_output_timeout: 12m
           command: |
             cd backend
-            echo "typeorm_connection: $TYPEORM_CONNECTION "
-            echo "TYPEORM_HOST: $TYPEORM_HOST "
-            echo ENVIROMENT=$ENVIROMENT > ".env"
-            echo "ENVIRONMENT : $ENVIROMENT "
-            echo  ENVIRONMENT  $ENVIROMENT
-            echo 'ENVIRONMENT : $ENVIROMENT '
-            ls
-            echo ENVIRONMENT=productionb > "backend/.env"
-            echo ENVIRONMENT=productiona > ".env"
+            echo ENVIRONMENT=production > ".env"
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
@@ -272,9 +264,8 @@ jobs:
             ls
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
-            cat backend/.env
+#            cat backend/.env
             cat .env
-            ls backend
       - run:
           name: Send migration results to kvdb
           command: | 
