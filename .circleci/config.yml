@@ -10,13 +10,15 @@ commands:
         type: string
     steps:
       - run:
-          name: Install AWS CLI if not installed
+          name: Install AWS CLI if not installed - getting access denied
           when: on_fail
           command: |
             if ! [ -x "$(command -v aws)" ]; then
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+            /usr/local/bin/python -m pip install --upgrade pip  
+            pip install awscli --upgrade  
+#            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#            unzip awscliv2.zip
+#            ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
             else
             echo "AWS CLI already installed"
             fi
@@ -38,7 +40,7 @@ commands:
         type: string     
     steps:
       - run:
-          name: Revert migrations
+          name: Revert migrations 
           when: on_fail            # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
@@ -143,8 +145,8 @@ jobs:
           command: |
             cd backend
             npm install
-#            npm audit --audit-level=critical 
-#            npm audit fix --audit-level=critical --force  
+            npm audit fix --audit-level=critical --force
+#            npm audit --audit-level=critical   
             
 
   deploy-infrastructure:
@@ -154,7 +156,7 @@ jobs:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script #      - run: yum -y install gzip - dont need this runs both in  one line
       - run: 
-          name: Ensure back-end infrastructure exist and capture Backend IP (4 ansible)
+          name: DEPLOY INFRA: Ensure BACKEND infrastructure exist and capture Backend IP (4 ansible)
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
@@ -178,7 +180,7 @@ jobs:
             - inventory.txt
               
       - run:
-          name: Ensure front-end infrastructure exist & capture S3Name
+          name: DDEPLOY INFRA: Ensure FRONTEND  infrastructure exist & capture S3Name
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
@@ -216,11 +218,11 @@ jobs:
             apk add python3
             apk add curl 
             /usr/local/bin/python -m pip install --upgrade pip  
-            ansible --version            
             pip install awscli --upgrade   
-            aws --version  
+            ansible --version  
+            echo aws --version  
       - run:
-          name: Configure server
+          name: CONFIGURE INFRA: config-server - 2 roles
           command: |
             cat /tmp/.circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
@@ -238,14 +240,14 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Run migrations
+          name: RUN MIGRATIONS - check - it's Failing to get EVN Variables!
           no_output_timeout: 12m
           command: |
             cd backend
-            ls
-            echo $TYPEORM_CONNECTION
-            echo TYPEORM_HOST
+            echo "typeorm_connection: $TYPEORM_CONNECTION "
+            echo "TYPEORM_HOST: $TYPEORM_HOST "
             echo ENVIROMENT=$ENVIROMENT > ".env"
+            ls
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
@@ -261,10 +263,13 @@ jobs:
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
             cat backend/.env
+            cat .env
             ls backend
       - run:
           name: Send migration results to kvdb
           command: | 
+            pwd
+            cat ~/project/backend/migrations_dump.txt
             result=0          
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
