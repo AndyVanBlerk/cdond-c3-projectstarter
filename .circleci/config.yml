@@ -171,7 +171,7 @@ jobs:
               echo "$BACKEND_PUBLIC_IP"
               echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
               cat ./.circleci/ansible/inventory.txt
-              curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
+              curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/BACKEND_PUBLIC_IP_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
       - persist_to_workspace:
           root: .circleci/ansible
           paths:
@@ -268,15 +268,23 @@ jobs:
       - run:
           name: Send migration results to kvdb
           command: | 
+            cd backend
             pwd
-            cat ~/project/backend/migrations_dump.txt
+            cat migrations_dump.txt
             result=0          
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
               result=1
-            fi           
-            curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
-            echo "result: $result" 
+            fi  
+            echo "result: $result"
+            echo $result >> migration-results.txt            
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend/migration-results.txt
+            
+#                echo "insecure" >> ~/.curlr        
+            #            curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
      # Here's where you will add some code to rollback on failure      
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -388,7 +396,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]    
- #     - deploy-frontend:
- #         requires: [run-migrations]
- #     - deploy-backend:
- #         requires: [run-migrations]    
+     - deploy-frontend:
+         requires: [run-migrations]
+     - deploy-backend:
+         requires: [run-migrations]    

@@ -171,7 +171,7 @@ jobs:
               echo "$BACKEND_PUBLIC_IP"
               echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
               cat ./.circleci/ansible/inventory.txt
-              curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
+              curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/BACKEND_PUBLIC_IP_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
       - persist_to_workspace:
           root: .circleci/ansible
           paths:
@@ -239,26 +239,16 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-        name: Install awscli
-        command: |
-          sudo apt-get update
-          sudo apt-get install -y awscli curl 
+          name: Install awscli
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y awscli curl 
       - run:
           name: RUN MIGRATIONS - check - it's Failing to get EVN Variables!
           no_output_timeout: 12m
           command: |
             cd backend
-            echo "typeorm_connection: $TYPEORM_CONNECTION "
-            echo "TYPEORM_HOST: $TYPEORM_HOST "
-            echo ENVIROMENT=$ENVIROMENT > ".env"
-            echo "ENVIRONMENT : $ENVIROMENT "
-            echo  ENVIRONMENT  $ENVIROMENT
-            echo 'ENVIRONMENT : $ENVIROMENT '
-            TEST=test1
-            echo $TEST            
-            ls
-            echo ENVIRONMENT=productionb > "backend/.env"
-            echo ENVIRONMENT=productiona > ".env"
+            echo ENVIRONMENT=production > ".env"
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
@@ -274,9 +264,7 @@ jobs:
             ls
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
-            cat backend/.env
             cat .env
-            ls backend
       - run:
           name: Send migration results to kvdb
           command: | 
@@ -286,9 +274,10 @@ jobs:
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
               result=1
-            fi           
-            curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
+            fi  
             echo "result: $result" 
+            echo "insecure" >> ~/.curlrc            
+            curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
      # Here's where you will add some code to rollback on failure      
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -400,7 +389,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]    
- #     - deploy-frontend:
- #         requires: [run-migrations]
- #     - deploy-backend:
- #         requires: [run-migrations]    
+     - deploy-frontend:
+         requires: [run-migrations]
+     - deploy-backend:
+         requires: [run-migrations]    

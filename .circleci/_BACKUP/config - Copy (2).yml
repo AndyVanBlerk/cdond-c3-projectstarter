@@ -10,6 +10,15 @@ commands:
         type: string
     steps:
       - run:
+          name: Install AWS CLI if not installed - getting access denied
+          when: on_fail
+          command: |
+            if ! [ -x "$(command -v aws)" ]; then
+            sudo apt install -y awscli
+            else
+            echo "AWS CLI already installed"
+            fi
+      - run:
           name: Destroy environments
           when: on_fail
           command: |
@@ -27,7 +36,7 @@ commands:
         type: string     
     steps:
       - run:
-          name: Revert migrations
+          name: Revert migrations 
           when: on_fail            # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
@@ -56,6 +65,7 @@ jobs:
             cd frontend
             npm install
             npm run build
+            npm audit fix --audit-level=moderate --force
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -72,6 +82,7 @@ jobs:
             cd backend
             npm install
             npm run build
+            npm audit fix --audit-level=moderate --force
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -116,10 +127,10 @@ jobs:
           keys: [frontend-build]
       - run:                       # Your job code here
           name: Scan frontend Dependencies
-          command:
+          command: |
             cd frontend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit fix --audit-level=critical --force        
 
   scan-backend:
     <<: *defaults  
@@ -129,10 +140,12 @@ jobs:
           keys: [backend-build]
       - run:                       # Your job code here
           name: Scan Backend Dependencies
-          command:
+          command: |
             cd backend
             npm install
-            npm audit --audit-level=critical || true
+            npm audit fix --audit-level=critical --force
+#            npm audit --audit-level=critical   
+            
 
   deploy-infrastructure:
     docker:
@@ -141,7 +154,7 @@ jobs:
       - checkout      # Checkout code from git
       - run: yum -y install tar gzip   # run as shell script #      - run: yum -y install gzip - dont need this runs both in  one line
       - run: 
-          name: Ensure back-end infrastructure exist and capture Backend IP (4 ansible)
+          name: DEPLOY INFRA  Ensure BACKEND infrastructure exist and capture Backend IP (4 ansible)
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
@@ -149,10 +162,10 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
               BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-              --filters "Name=instance-type,Values=t2.micro" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
+              echo "workflowID:  ${CIRCLE_WORKFLOW_ID:0:7}"
               echo $BACKEND_PUBLIC_IP>>.circleci/ansible/inventory.txt   
               pwd
               echo "$BACKEND_PUBLIC_IP"
@@ -165,14 +178,14 @@ jobs:
             - inventory.txt
               
       - run:
-          name: Ensure front-end infrastructure exist & capture S3Name
+          name: DDEPLOY INFRA Ensure FRONTEND  infrastructure exist & capture S3Name
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-              echo "workflowID:  {CIRCLE_WORKFLOW_ID:0:7}"
+              echo "workflowID:  ${CIRCLE_WORKFLOW_ID:0:7}"
               S3Name=$(aws s3 ls | grep udapeople)
               echo " s3Name: $S3Name"
               N=3
@@ -184,7 +197,7 @@ jobs:
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
-
+          
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
@@ -203,11 +216,12 @@ jobs:
             apk add python3
             apk add curl 
             /usr/local/bin/python -m pip install --upgrade pip  
-            ansible --version            
             pip install awscli --upgrade   
-            aws --version  
+            ansible --version  
+            aws --version
+#           echo aws --version  # returned echo aws --version
       - run:
-          name: Configure server
+          name: CONFIGURE INFRA config-server - 2 roles
           command: |
             cat /tmp/.circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
@@ -215,6 +229,7 @@ jobs:
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
+          
   run-migrations:  #3
     docker:
       - image: circleci/node:13.8.0
@@ -224,12 +239,16 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Run migrations
+          name: Install awscli
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y awscli curl 
+      - run:
+          name: RUN MIGRATIONS - check - it's Failing to get EVN Variables!
           no_output_timeout: 12m
           command: |
             cd backend
-            ls
-            echo ENVIROMENT=$ENVIROMENT > ".env"
+            echo ENVIRONMENT=production > ".env"
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
@@ -242,11 +261,15 @@ jobs:
             npm cache clean --force
             npm install
             touch migrations_dump.txt
+            ls
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
+            cat .env
       - run:
           name: Send migration results to kvdb
           command: | 
+            pwd
+            cat ~/project/backend/migrations_dump.txt
             result=0          
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
@@ -260,7 +283,6 @@ jobs:
           event: on_fail
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-#          event: on_fail
           
           
   deploy-frontend:
@@ -339,16 +361,26 @@ jobs:
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail          
+          event: on_fail
       - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
 
        
 workflows:
   CICDPipeline:
     jobs:
-      - deploy-infrastructure
-#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]  
+      - deploy-infrastructure:    
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
 #          filters:
 #            branches:
 #              only: [test-feature-branch]  # this makes it not run the job..... ?#
@@ -356,7 +388,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]    
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]    
+     - deploy-frontend:
+         requires: [run-migrations]
+     - deploy-backend:
+         requires: [run-migrations]    
