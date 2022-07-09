@@ -36,6 +36,7 @@ jobs:
   Revert-migrations:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
+    steps:
       - checkout 
       - run:
           name: Install dependencies
