@@ -264,7 +264,6 @@ jobs:
             ls
             npm run migrations >> migrations_dump.txt
             cat migrations_dump.txt
-#            cat backend/.env
             cat .env
       - run:
           name: Send migration results to kvdb
