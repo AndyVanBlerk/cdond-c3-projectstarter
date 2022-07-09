@@ -30,22 +30,15 @@ commands:
           name: Revert migrations 
           when: on_fail            # Add when this will run
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_<< parameters.workflow_id >>)
-            if(( $SUCCESS==1 )); 
-            then
-              cd backend
-              npm install
-              npm run migrations:revert
-            fi
-            echo "Success: $SUCCESS"
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result 
             npm run migrations:revert            
 jobs:
   Revert-migrations:
     docker:
       - image: amazon/aws-cli     # Docker image here that supports AWS CLI
     steps:
-      - checkout      
+      - checkout  
+      - run: npm install      
       - run: exit 1  # kicks off the destroy-environment
       - revert-migrations:
           workflow_id: "5cfa402"  ###@@@@@"${CIRCLE_WORKFLOW_ID:0:7}"
