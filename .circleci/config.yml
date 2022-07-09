@@ -254,8 +254,6 @@ jobs:
             echo "ENVIRONMENT : $ENVIROMENT "
             echo  ENVIRONMENT  $ENVIROMENT
             echo 'ENVIRONMENT : $ENVIROMENT '
-            TEST=test1
-            echo $TEST            
             ls
             echo ENVIRONMENT=productionb > "backend/.env"
             echo ENVIRONMENT=productiona > ".env"
