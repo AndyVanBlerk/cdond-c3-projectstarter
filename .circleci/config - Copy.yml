@@ -239,10 +239,10 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Install awscli
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y awscli curl 
+        name: Install awscli
+        command: |
+          sudo apt-get update
+          sudo apt-get install -y awscli curl 
       - run:
           name: RUN MIGRATIONS - check - it's Failing to get EVN Variables!
           no_output_timeout: 12m
