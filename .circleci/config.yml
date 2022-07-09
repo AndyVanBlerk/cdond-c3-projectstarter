@@ -219,7 +219,7 @@ jobs:
             ansible --version  
             echo aws --version  
       - run:
-          name: CONFIGURE INFRA: config-server - 2 roles
+          name: CONFIGURE INFRA config-server - 2 roles
           command: |
             cat /tmp/.circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
