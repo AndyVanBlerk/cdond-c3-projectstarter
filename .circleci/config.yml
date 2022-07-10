@@ -40,7 +40,7 @@ commands:
           when: on_fail            # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_<< parameters.workflow_id >>)
+            # SUCCESS=$(curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_<< parameters.workflow_id >>)
             if(( $SUCCESS==1 )); 
             then
               cd backend
@@ -327,7 +327,8 @@ jobs:
             cd frontend
             cat .env
             npm run build
-            aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive  #Copies a local file or S3 object to another location locally or in S3.
+            aws s3 ls | grep udapeople
 #      - destroy-environment:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
 #          event: on_fail
@@ -362,8 +363,8 @@ jobs:
           name: Configure backend server
           command: |
             tar -C backend -czvf artifact.tar.gz .
-            ls -la
             cd .circleci/ansible/
+            ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
             cd backend
