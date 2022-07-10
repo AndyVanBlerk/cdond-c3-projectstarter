@@ -71,7 +71,12 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-
+      - run: exit 1  # kicks off the destroy-environment
+      - revert-migrations:
+          workflow_id: "e5c5a86"  ###@@@@@"${CIRCLE_WORKFLOW_ID:0:7}"
+      - destroy-environment:
+          workflow_id: "e5c5a86"
+          event: on_fail   
   test-frontend:
     <<: *defaults  
     steps:
@@ -140,4 +145,5 @@ workflows:
   Revert-1:
     jobs:
       - build-backend
+      - build-frontend
 
