@@ -47,8 +47,10 @@ commands:
               npm install
               npm run migrations:revert
             fi
+            cd backend
             echo "Success: $SUCCESS"
-            npm run migrations:revert
+            npm install
+            npm run migrations:revert  ##@@ REVERT MIGRATIONS
 
 defaults: &defaults   ## anchor & aliases
     docker:
