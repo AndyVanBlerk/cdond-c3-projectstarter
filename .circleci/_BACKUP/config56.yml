@@ -352,18 +352,12 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            apk update
-            apk upgrade
             apk add --update ansible
             ansible --version
             apk add curl
             apk add openssh-client
             pip3 install awscli
             aws --version
-            /usr/local/bin/python -m pip install --upgrade pip
-            apk add --update nodejs nodejs-npm
-            node --version
-            npm --version
 #            npm install
 #            npm audit fix
 #            sudo npm cache clean -f
