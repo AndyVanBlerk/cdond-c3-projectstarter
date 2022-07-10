@@ -318,8 +318,8 @@ jobs:
           command: |
             echo " workflowID: ${CIRCLE_WORKFLOW_ID:0:7} "
             export BACKEND_IP=$(aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
@@ -331,7 +331,7 @@ jobs:
             cat .env
             npm run build
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive  #Copies a local file or S3 object to another location locally or in S3.
-            aws s3 ls | grep udapeople-${CIRCLE_WORKFLOW_ID:0:7}
+            aws s3 ls | grep udapeople
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
@@ -347,10 +347,8 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77"
- #     - attach_workspace:
- #         at: ~/        #.circleci/ansible
       - attach_workspace:
-          at: /tmp/.circleci/ansible          
+          at: ~/        #.circleci/ansible
       - run:
           name: Install Dependencies
           command: |
@@ -366,9 +364,6 @@ jobs:
             apk add --update nodejs nodejs-npm
             node --version
             npm --version
-            cd backend
-            npm i
-            npm run build
 #            npm install
 #            npm audit fix
 #            sudo npm cache clean -f
@@ -382,6 +377,8 @@ jobs:
           command: |
             echo " workflowID: ${CIRCLE_WORKFLOW_ID:0:7} "
             cd backend
+            npm i
+            npm run build
             cp package* ./dist
             cd ..
             tar -C backend -czvf artifact.tar.gz .
@@ -389,7 +386,7 @@ jobs:
             pwd
             ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt deploy-backend.yml
+            ansible-playbook -i .circleci/ansible/inventory.txt deploy-backend.yml
             cat inventory.txt
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
