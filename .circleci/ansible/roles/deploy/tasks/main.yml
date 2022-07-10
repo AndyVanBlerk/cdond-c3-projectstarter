@@ -3,11 +3,17 @@
   apt:
     upgrade: "yes"
 
-- name: "install dependencies."
+- name: "install dependencies - nodejs"
   become: true
   apt:
-    name: ["nodejs", "npm"]
+    name: nodejs
     update_cache: yes
+    
+- name: "install dependencies - npm"
+  become: true
+  apt:
+    name: npm
+    update_cache: yes    
 
 - name: "install pm2"
   become: true
