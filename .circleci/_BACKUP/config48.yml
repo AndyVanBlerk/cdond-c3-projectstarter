@@ -69,7 +69,7 @@ jobs:
             cd frontend
             npm install
             npm run build
-            npm audit fix --audit-level=moderate  # --force
+            npm audit fix --audit-level=moderate --force
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -86,7 +86,7 @@ jobs:
             cd backend
             npm install
             npm run build
-            npm audit fix --audit-level=moderate   # --force
+            npm audit fix --audit-level=moderate --force
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -134,7 +134,7 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm audit fix --audit-level=critical # --force        
+            npm audit fix --audit-level=critical --force        
 
   scan-backend:
     <<: *defaults  
@@ -147,7 +147,7 @@ jobs:
           command: |
             cd backend
             npm install
-            npm audit fix --audit-level=critical         # --force
+            npm audit fix --audit-level=critical --force
 #            npm audit --audit-level=critical   
             
 
@@ -262,7 +262,7 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
-#            npm cache clean --force
+            npm cache clean --force
             npm install
             touch migrations_dump.txt
             ls -la
