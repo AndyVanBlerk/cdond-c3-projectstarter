@@ -363,13 +363,14 @@ jobs:
       - run:
           name: Configure backend server
           command: |
+            # Zip and move artifact to ansible
             tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible/
+            pwd
             ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
-            cd backend
-            cat /.env
+            ansible-playbook -i inventory.txt deploy-backend.yml
+            cat inventory.txt
 #      - destroy-environment:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
 #          event: on_fail
