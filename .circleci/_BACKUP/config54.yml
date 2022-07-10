@@ -23,12 +23,11 @@ commands:
           when: on_fail
           command: |
             echo " Destroying Environment: "-<<parameters.workflow_id>>
+            echo " aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive "
+            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
             echo " aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>> "
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
-            echo " aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive "
-            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
-            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
             
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -48,8 +47,8 @@ commands:
             #  npm install
             #  npm run migrations:revert
             #fi
-            #echo "Success: $SUCCESS"
             cd backend
+            #echo "Success: $SUCCESS"
             npm install
             npm run migrations:revert  ##@@ REVERT MIGRATIONS regardless
 
