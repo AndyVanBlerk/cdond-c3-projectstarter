@@ -62,5 +62,5 @@ jobs:
 workflows:
   Revert-1:
     jobs:
-      - Revert-migrations
+      - revert-migrations
 
