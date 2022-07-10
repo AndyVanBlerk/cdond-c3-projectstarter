@@ -223,6 +223,7 @@ jobs:
             pip install awscli --upgrade   
             ansible --version  
             aws --version
+#           echo aws --version  # returned echo aws --version
       - run:
           name: CONFIGURE INFRA config-server - 2 roles
           command: |
@@ -330,11 +331,11 @@ jobs:
             npm run build
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive  #Copies a local file or S3 object to another location locally or in S3.
             aws s3 ls | grep udapeople
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          event: on_fail
+#      - revert-migrations:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
 
        
   deploy-backend:
@@ -358,7 +359,6 @@ jobs:
             npm install
             npm audit fix
             sudo npm cache clean -f
-            aws --version
       - run:
           name: Check what path you at
           command: |
@@ -367,11 +367,7 @@ jobs:
       - run:
           name: Configure backend server
           command: |
-            cd backend
-            npm i
-            npm run build
-            cp package* ./dist
-            cd ..
+            # Zip and move artifact to ansible
             tar -C backend -czvf artifact.tar.gz .
             cd .circleci/ansible/
             pwd
@@ -379,11 +375,11 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt deploy-backend.yml
             cat inventory.txt
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          event: on_fail
+#      - revert-migrations:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
 
           
   smoke-test:
@@ -435,11 +431,11 @@ jobs:
               else
                 exit 1
               fi
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          event: on_fail
+#      - revert-migrations:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
 
           
   cloudfront-update:
@@ -478,11 +474,11 @@ jobs:
           paths:
             - OldWorkflowID.txt
       # Here's where you will add some code to rollback on failure
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-          event: on_fail
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
+#      - destroy-environment:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          event: on_fail
+#      - revert-migrations:
+#          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
 
   cleanup:
     docker:
