@@ -41,14 +41,14 @@ commands:
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             # SUCCESS=$(curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_<< parameters.workflow_id >>)
-            # if(( $SUCCESS==1 )); 
-            #then
-            #  cd backend
-            #  npm install
-            #  npm run migrations:revert
-            #fi
+            if(( $SUCCESS==1 )); 
+            then
+              cd backend
+              npm install
+              npm run migrations:revert
+            fi
             cd backend
-            #echo "Success: $SUCCESS"
+            echo "Success: $SUCCESS"
             npm install
             npm run migrations:revert  ##@@ REVERT MIGRATIONS regardless
 
@@ -234,7 +234,8 @@ jobs:
           event: on_fail
           
   run-migrations:  #3
-    <<: *defaults 
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       - checkout
@@ -354,10 +355,10 @@ jobs:
             apk add curl
             apk add openssh-client
             pip3 install awscli
+            npm install
+            npm audit fix
+            sudo npm cache clean -f
             aws --version
-#            npm install
-#            npm audit fix
-#            sudo npm cache clean -f
       - run:
           name: Check what path you at
           command: |
@@ -386,7 +387,9 @@ jobs:
 
           
   smoke-test:
-    <<: *defaults 
+    docker:
+      # Lightweight Docker image
+      - image: circleci/node:13.8.0
     steps:
       # Checkout code from git
       - checkout
