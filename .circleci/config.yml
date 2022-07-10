@@ -50,7 +50,7 @@ commands:
             cd backend
             echo "Success: $SUCCESS"
             npm install
-            npm run migrations:revert  ##@@ REVERT MIGRATIONS
+            npm run migrations:revert  ##@@ REVERT MIGRATIONS regardless
 
 defaults: &defaults   ## anchor & aliases
     docker:
@@ -286,7 +286,7 @@ jobs:
           root: ~/
           paths:
             - project/backend/migration-results.txt
-      - run: exit 1   ###@@@ TO REVERT MIGRATIONS
+#      - run: exit 1   ###@@@ TO REVERT MIGRATIONS
 #                echo "insecure" >> ~/.curlr        
             #            curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result
      # Here's where you will add some code to rollback on failure      
@@ -316,8 +316,9 @@ jobs:
           name: Get backend url
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text)
+                --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="http://${BACKEND_IP}:3030" >> "frontend/.env"
             cat frontend/.env
