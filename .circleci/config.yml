@@ -379,8 +379,7 @@ jobs:
             echo $(pwd)   
             ls -la            
             cd .circleci/ansible/
-            ls -la 
-            tmp/.circleci/ansible/inventory.txt            
+       
       - run:
           name: Configure backend server
           command: |
