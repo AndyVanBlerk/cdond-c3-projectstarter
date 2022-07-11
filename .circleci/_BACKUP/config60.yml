@@ -178,7 +178,11 @@ jobs:
               echo "BACKEND_PUBLIC_IP=$BACKEND_PUBLIC_IP"
               cat ./.circleci/ansible/inventory.txt
               curl https://kvdb.io/HmphVaHTVRNxCdTSX6zsLJ/BACKEND_PUBLIC_IP_${CIRCLE_WORKFLOW_ID:0:7} -d "${BACKEND_PUBLIC_IP}"
-             
+      - persist_to_workspace:
+          root: .circleci/ansible
+          paths:
+            - inventory.txt
+              
       - run:
           name: DDEPLOY INFRA Ensure FRONTEND  infrastructure exist & capture S3Name
           command: |
@@ -195,11 +199,7 @@ jobs:
               CutS3=${arr[N-1]}
               echo " CutS3 : $CutS3"
               curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d $CutS3
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
-            
+
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
@@ -212,7 +212,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ['cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77'] 
       - attach_workspace:
-          at: ~/
+          at: /tmp/.circleci/ansible
       - run:
           name: Install dependencies
           command: |
@@ -228,14 +228,9 @@ jobs:
       - run:
           name: CONFIGURE INFRA config-server - 2 roles
           command: |
-            cd .circleci/ansible
+            cat /tmp/.circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
-            echo "Inventory.txt file CHECK1"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt configure-server.yml
-#            cat /tmp/.circleci/ansible/inventory.txt
-#            export ANSIBLE_HOST_KEY_CHECKING=False
-#            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
@@ -376,8 +371,9 @@ jobs:
 #            npm install
 #            npm audit fix
 #            sudo npm cache clean -f
-#      - attach_workspace:
-#          at: /tmp/.circleci/ansible
+
+      - attach_workspace:
+          at: /tmp/.circleci/ansible
       - run:
           name: Check Inventory has come with new workspace /tmp/.circleci/ansible
           command: |
@@ -397,11 +393,8 @@ jobs:
             pwd
             ls -la
             export ANSIBLE_HOST_KEY_CHECKING=False
-            echo "Inventory.txt file CHECK2"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
-#            cat tmp/.circleci/ansible/inventory.txt
-#            ansible-playbook -i tmp/.circleci/ansible/inventory.txt deploy-backend.yml
+            cat tmp/.circleci/ansible/inventory.txt
+            ansible-playbook -i tmp/.circleci/ansible/inventory.txt deploy-backend.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
@@ -456,9 +449,9 @@ jobs:
               else
                 exit 1
               fi
- #     - destroy-environment:
- #         workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
- #         event: on_fail
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
 
@@ -573,7 +566,7 @@ workflows:
       - deploy-backend:
           requires: [run-migrations]    
       - smoke-test:
- #         requires: [deploy-backend, deploy-frontend]
+          requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
       - cleanup:
