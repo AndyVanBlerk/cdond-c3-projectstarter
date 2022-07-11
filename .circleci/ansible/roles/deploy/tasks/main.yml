@@ -24,22 +24,29 @@
     production: yes
     state: present
 
-- name: "deploy backend app to new location"
-  become: true
-  copy:
-    src: app.tar.gz
-    dest: /home/ubuntu/
-    
-- name: "Unpack app.tar.gz files"
-  become: true
-  shell: |
-    cd /home/ubuntu/
-    tar xzvf app.tar.gz
-    rm app.tar.gz
-    ls
+name: Creates directory
+  file:
+    path: /home/ubuntu/backend
+    state: directory
 
-- name: "running backend app"
+- name: Copy backend dist files web server
+  copy:
+    src: /root/project/artifact.tar.gz
+    dest: /home/ubuntu/backend/artifact.tar.gz
+
+- name: Uncompress Backend
+  shell: |
+    cd /home/ubuntu/backend
+    tar xvzf artifact.tar.gz -C .
+    ls -la
+
+- name: Build
   become: true
   shell: |
-    cd /home/ubuntu/dist
-    pm2 start main.js
+    cd /home/ubuntu/backend
+    npm install
+    npm run build
+
+- name: Start PM2
+  shell: |
+    cd /home/ubuntu/backend
