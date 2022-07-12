@@ -27,7 +27,7 @@ commands:
             echo " aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>> "
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
             echo " CODE TO DELETE S3 aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive "
-            echo aws s3 ls
+            aws s3 ls
             aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
             aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
             
