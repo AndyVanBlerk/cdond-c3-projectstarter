@@ -21,6 +21,10 @@ Resources:
           FromPort: 3030
           ToPort: 3030
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 9100
+          ToPort: 9100
+          CidrIp: 0.0.0.0/0
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -35,6 +39,11 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
+  UdaElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref EC2Instance          
 
 Outputs:    ##@@ added
   Ec2BackendIP:

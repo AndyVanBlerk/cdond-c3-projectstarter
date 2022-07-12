@@ -71,7 +71,7 @@ jobs:
             cd frontend
             npm install
             npm run build
-#            npm audit fix --audit-level=moderate  # --force
+            npm audit fix --audit-level=moderate  # --force
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -88,7 +88,7 @@ jobs:
             cd backend
             npm install
             npm run build
- #           npm audit fix --audit-level=moderate   # --force
+            npm audit fix --audit-level=moderate   # --force
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -107,7 +107,7 @@ jobs:
             npm run test
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-test
+          key: frontend-build
 
   test-backend:
     <<: *defaults  
@@ -123,7 +123,7 @@ jobs:
             npm run test
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-test
+          key: backend-build
 
   scan-frontend:
     <<: *defaults  
@@ -137,9 +137,6 @@ jobs:
             cd frontend
             npm install
             npm audit fix --audit-level=critical # --force        
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-scan
 
   scan-backend:
     <<: *defaults  
@@ -153,9 +150,8 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical         # --force
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-scan  
+#            npm audit --audit-level=critical   
+            
 
   deploy-infrastructure:
     docker:
@@ -199,7 +195,6 @@ jobs:
               CutS3=${arr[N-1]}
               echo " CutS3 : $CutS3"
               curl https://kvdb.io/U9HGBYGCvurKDMVqTuNQLH/S3Name_${CIRCLE_WORKFLOW_ID:0:7} -d $CutS3
-            
       - persist_to_workspace:
           root: ~/
           paths:
