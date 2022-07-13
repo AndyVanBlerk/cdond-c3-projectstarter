@@ -225,8 +225,10 @@ jobs:
             apk update pip3
             pip3 install \
             awscli \
+            echo "Ansible version"
+            ansible --version  
             echo "AWS version"
-            aws --version  
+            aws --version         
 #            apk add --update ansible 
 #            apk upgrade
 #            apk add unzip 
