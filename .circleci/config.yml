@@ -242,6 +242,8 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             echo "Inventory.txt file CHECK1"
             cat inventory.txt
+            pws
+            ls -la
             ansible-playbook -i inventory.txt configure-server.yml
 #            cat /tmp/.circleci/ansible/inventory.txt
 #            export ANSIBLE_HOST_KEY_CHECKING=False
