@@ -191,7 +191,7 @@ jobs:
             pip3 install \
             awscli \
       - add_ssh_keys:
-          fingerprints: ["59:b9:90:a7:79:4d:e1:8b:f4:a2:0a:86:3e:d2:b8:1d"]
+          fingerprints: ["cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77"]
       - attach_workspace:
           at: ~/
       - run:
@@ -225,12 +225,22 @@ jobs:
            npm install
            npm run migrations > migrations_dump.txt
       - run:
-          name: Send migration results to memstash
-          command: |
+          name: Send migration results persistant txt file
+          command: | 
+            cd backend
+            pwd
+            cat migrations_dump.txt
+            result=0          
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
-            curl -H "Content-Type: text/plain" -H "token: 0997018d-c7cb-4ca8-9de2-4670516e174e" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
-            fi
+              result=1
+            fi  
+            echo "result: $result"
+            echo $result >> migration-results.txt            
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend/migration-results.txt
       - destroy-environment
       
   deploy-frontend:
@@ -281,7 +291,7 @@ jobs:
             apk add --update curl
             apk add --update nodejs npm
       - add_ssh_keys:
-          fingerprints: ["59:b9:90:a7:79:4d:e1:8b:f4:a2:0a:86:3e:d2:b8:1d"]
+          fingerprints: ["cf:73:39:88:ac:09:a1:85:0a:6d:64:b6:ab:8a:58:77"]
       - attach_workspace:
           at: ~/
       - run:
