@@ -32,22 +32,16 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: udacity # If you use another key pair name, you should change this value to match.
+      KeyName: udapeoplekey # If you use another key pair name, you should change this value to match.
       # If this ami id is not available for you, you can find another (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
       # Ubuntu 18 or higher works fine
-      ImageId: ami-083654bd07b5da81d # 2nd one ami-0747bdcabd34c712a  ## 3rd one: ami-00ddb0e5626798373 # 4th one  1st one failing - ami-068663a3c619dd892 
+      ImageId: ami-083654bd07b5da81d
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
+  
   UdaElasticIP:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-      InstanceId: !Ref EC2Instance          
-
-Outputs:    ##@@ added
-  Ec2BackendIP:
-    Description: Public IPv4 DNS name Ec2 Instance
-    Value: !GetAtt EC2Instance.PublicIp
-    Export:
-      Name: !Sub ${ID}-Ec2BackendIP
+      InstanceId: !Ref EC2Instance
