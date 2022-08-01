@@ -15,12 +15,8 @@ commands:
           command: |
            echo " Destroying Environment: "-<<parameters.workflow_id>>
            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-           aws cloudformation delete-stack \
-           --stack-name udapeople-frontend-<<parameters.workflow_id>> \
-           --region us-east-1 
-           aws cloudformation delete-stack \
-           --stack-name udapeople-backend-<<parameters.workflow_id>>\
-           --region us-east-1 
+           aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>> --region us-east-1 
+           aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>> --region us-east-1 
   
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -32,7 +28,8 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_<< parameters.workflow_id >>)
+#            SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_<< parameters.workflow_id >>)
+             SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_$CIRCLE_WORKFLOW_ID:0:7)
             if(( $SUCCESS == '1' )); 
             then
               cd ~/project/backend
@@ -246,7 +243,7 @@ jobs:
             fi  
             echo "result: $result"
             echo $result >> migration-results.txt  
-            curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result          
+#            curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result          
       - persist_to_workspace:
           root: ~/
           paths:
@@ -254,6 +251,8 @@ jobs:
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       
   deploy-frontend:
     docker:
