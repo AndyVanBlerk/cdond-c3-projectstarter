@@ -3,42 +3,50 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID
+    parameters:
+      workflow_id: 
+        type: string
+      event:
+        type: string
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-           aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+           echo " Destroying Environment: "-<<parameters.workflow_id>>
+           aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
            aws cloudformation delete-stack \
-           --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+           --stack-name udapeople-frontend-<<parameters.workflow_id>> \
            --region us-east-1 
            aws cloudformation delete-stack \
-           --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+           --stack-name udapeople-backend-<<parameters.workflow_id>>\
            --region us-east-1 
   
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflow_id:
+        type: string 
     steps:
       - run:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl -H "token: 0997018d-c7cb-4ca8-9de2-4670516e174e" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_<< parameters.workflow_id >>)
             if(( $SUCCESS == '1' )); 
             then
               cd ~/project/backend
               npm install
               npm run migration:revert
             fi
-  
-  
-      
+
+defaults: &defaults   ## anchor & aliases
+    <<: *defaults  
 
 
 jobs:
   build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -48,14 +56,14 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm run build
+            npm run build 
+#            npm audit fix --audit-level=moderate  # --force          
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
 
   build-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -66,13 +74,13 @@ jobs:
             cd backend
             npm install
             npm run build
+#            npm audit fix --audit-level=moderate  # --force            
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
   
   test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -89,8 +97,7 @@ jobs:
     
                 
   test-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -106,8 +113,7 @@ jobs:
           key: backend-test
 
   scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -123,8 +129,7 @@ jobs:
           key: frontend-scan
 
   scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - restore_cache:
@@ -176,7 +181,9 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment   
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
   
   configure-infrastructure:
     docker:
@@ -209,11 +216,12 @@ jobs:
           command: |
            cd .circleci/ansible
            ansible-playbook -i inventory.txt node-exporter.yml
-      - destroy-environment
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
  
   run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *defaults  
     steps:
       - checkout
       - run:
@@ -236,12 +244,15 @@ jobs:
               result=1
             fi  
             echo "result: $result"
-            echo $result >> migration-results.txt            
+            echo $result >> migration-results.txt  
+            curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result          
       - persist_to_workspace:
           root: ~/
           paths:
             - project/backend/migration-results.txt
-      - destroy-environment
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
       
   deploy-frontend:
     docker:
@@ -274,8 +285,11 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
   
   deploy-backend:
     docker:
@@ -310,8 +324,11 @@ jobs:
            cat inventory.txt
            ansible-playbook -i inventory.txt deploy-backend.yml
             
-      - destroy-environment
-      - revert-migrations 
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   smoke-test:
     docker:
@@ -353,8 +370,11 @@ jobs:
               return 1
             fi
       
-      - destroy-environment
-      - revert-migrations 
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
@@ -373,8 +393,11 @@ jobs:
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
 
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          event: on_fail
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
 #  cleanup:
 #    docker:
 #      - image: amazon/aws-cli
