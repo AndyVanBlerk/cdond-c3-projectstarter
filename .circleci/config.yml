@@ -41,7 +41,8 @@ commands:
             fi
 
 defaults: &defaults   ## anchor & aliases
-    <<: *defaults  
+    docker:
+      - image: circleci/node:13.8.0
 
 
 jobs:
