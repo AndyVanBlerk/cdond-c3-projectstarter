@@ -29,14 +29,14 @@ commands:
           when: on_fail
           command: |
             echo "insecure" >> ~/.curlrc
-            SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_$CIRCLE_WORKFLOW_ID:0:7)
+            SUCCESS=$(curl https://kvdb.io/GTR2XA6vaM4R8dcWfCQ1i7/migration_<< parameters.workflow_id >>)
             if(( $SUCCESS == '1' )); 
             then
               cd ~/project/backend
               npm install
               npm run migration:revert
             fi
-           
+#             SUCCESS=$(curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_$CIRCLE_WORKFLOW_ID:0:7)           
 defaults: &defaults   ## anchor & aliases
     docker:
       - image: circleci/node:13.8.0
@@ -243,8 +243,8 @@ jobs:
             fi  
             echo "result: $result"
             echo $result >> migration-results.txt  
-#           echo "insecure" >> ~/.curlrc            
-#            curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result          
+            echo "insecure" >> ~/.curlrc            
+            curl https://kvdb.io/CrQLRkh4m7xSgtt93PfHVk/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d $result          
       - persist_to_workspace:
           root: ~/
           paths:
