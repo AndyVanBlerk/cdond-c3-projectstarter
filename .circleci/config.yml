@@ -121,7 +121,7 @@ jobs:
       - checkout      # Checkout code from git
       - run: exit 1  # kicks off the destroy-environment
       - destroy-environment:
-          workflow_id:  "663565f" # "${CIRCLE_WORKFLOW_ID:0:7}"
+          workflow_id:  "e8e4ec5" # "${CIRCLE_WORKFLOW_ID:0:7}"
           event: on_fail
 #      - revert-migrations:
 #          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
